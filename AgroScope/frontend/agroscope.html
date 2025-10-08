@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgroScope – Анализ зерновых потерь</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 50%, #fefce8 100%);
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .navbar-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo { display: flex; align-items: center; gap: 0.5rem; }
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #4ade80 0%, #16a34a 100%);
+      border-radius: 8px; display: flex;
+      align-items: center; justify-content: center;
+      color: white; font-size: 1.5rem;
+    }
+    .logo-text {
+      font-size: 1.5rem; font-weight: bold;
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-buttons {
+      display: flex; gap: 0.5rem;
+    }
+    .nav-btn {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #4b5563;
+      transition: all 0.3s;
+    }
+    .nav-btn.active {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: white;
+      box-shadow: 0 2px 6px rgba(34,197,94,0.3);
+    }
+    .nav-btn:hover { background: #f0fdf4; }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+
+    .hero { text-align: center; padding: 3rem 0; }
+    .hero-title {
+      font-size: 2.5rem; font-weight: bold;
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+    .hero-subtitle {
+      font-size: 1.25rem; color: #6b7280;
+      margin-bottom: 2rem; max-width: 600px;
+      margin-left: auto; margin-right: auto;
+    }
+
+    .upload-zone {
+      border: 4px dashed #86efac;
+      border-radius: 16px;
+      padding: 3rem;
+      text-align: center;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .upload-zone:hover { border-color: #22c55e; }
+
+    .upload-icon { font-size: 4rem; color: #22c55e; margin-bottom: 1rem; }
+
+    .preview-image {
+      max-width: 100%; border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+      margin-bottom: 1rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: white; padding: 1rem 2rem;
+      border-radius: 12px; border: none;
+      font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: all 0.3s;
+      box-shadow: 0 4px 6px rgba(34,197,94,0.3);
+    }
+    .btn-primary:hover { transform: scale(1.05); }
+
+    .input-field {
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .input-field label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+    .input-field input {
+      width: 200px;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 2px solid #86efac;
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    .result-card {
+      padding: 1.5rem; border-radius: 12px; color: white;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1rem;
+    }
+    .green { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
+    .yellow { background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); }
+    .red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    .result-value { font-size: 2rem; font-weight: bold; }
+    .result-label { font-size: 0.875rem; opacity: 0.9; }
+
+    .help-section {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-content">
+      <div class="logo">
+        <div class="logo-icon">📷</div>
+        <div class="logo-text">AgroScope</div>
+      </div>
+      <div class="nav-buttons">
+        <button class="nav-btn active" onclick="showSection('upload')">📤 Анализ</button>
+        <button class="nav-btn" onclick="showSection('help')">❓ Помощь</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Раздел анализа -->
+    <div id="uploadSection">
+      <div class="hero">
+        <h1 class="hero-title">Анализ зерновых потерь</h1>
+        <p class="hero-subtitle">Загрузите фото поля и введите площадь в гектарах — AI рассчитает потери урожая</p>
+      </div>
+
+      <div class="input-field">
+        <label for="fieldArea">Площадь поля (в гектарах)</label>
+        <input type="number" id="fieldArea" min="0.1" step="0.1" placeholder="например, 25.0">
+      </div>
+
+      <div id="uploadZone" class="upload-zone" onclick="document.getElementById('fileInput').click()">
+        <div id="uploadContent">
+          <div class="upload-icon">📤</div>
+          <p style="font-size: 1.25rem; color: #6b7280; margin-bottom: 0.5rem;">Перетащите изображение сюда</p>
+          <p style="color: #9ca3af; margin-bottom: 1rem;">или выберите файл</p>
+          <button class="btn-primary" type="button">Выбрать файл</button>
+        </div>
+
+        <div id="previewContent" class="hidden">
+          <img id="previewImage" class="preview-image" alt="Preview">
+          <button class="btn-primary" onclick="analyzeImage(event)">Анализировать</button>
+        </div>
+      </div>
+
+      <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
+
+      <div id="resultsSection" class="hidden" style="margin-top:2rem;">
+        <h2 class="hero-title" style="text-align:center; margin-bottom:2rem;">Результаты анализа</h2>
+        <div style="background:white; padding:1.5rem; border-radius:16px; text-align:center; margin-bottom:2rem;">
+          <img id="resultImage" class="preview-image" alt="Result">
+        </div>
+        <div class="result-card green">
+          <div>
+            <div class="result-label">Подсчитано зерен</div>
+            <div class="result-value" id="grainCount">–</div>
+          </div>
+          <div style="font-size:2rem;">🌾</div>
+        </div>
+        <div class="result-card yellow">
+          <div>
+            <div class="result-label">Потери на гектар</div>
+            <div class="result-value" id="lossesPerHa">–</div>
+          </div>
+          <div style="font-size:2rem;">📉</div>
+        </div>
+        <div class="result-card red">
+          <div>
+            <div class="result-label">Общие потери (кг)</div>
+            <div class="result-value" id="seasonLosses">–</div>
+          </div>
+          <div style="font-size:2rem;">⚠️</div>
+        </div>
+        <div style="text-align:center; margin-top:2rem;">
+          <button class="btn-primary" onclick="resetApp()">Новый анализ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Раздел помощь -->
+    <div id="helpSection" class="hidden">
+      <div class="help-section">
+        <h3>Как правильно сфотографировать поле?</h3>
+        <ul>
+          <li>📸 Делайте фото сверху, с высоты 1–1.5 метра</li>
+          <li>☀️ Избегайте теней и бликов</li>
+          <li>🌾 На фото должны быть чётко видны зерна</li>
+          <li>📏 Участок примерно 50×50 см</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>Часто задаваемые вопросы</h3>
+        <p><b>Поддерживаемые форматы:</b> JPG, PNG, WEBP, BMP</p>
+        <p><b>Сохраняются ли данные?</b> Нет, все изображения обрабатываются только в памяти</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const backendURL = "http://127.0.0.1:8000/analyze";
+
+    function showSection(section) {
+      document.getElementById('uploadSection').classList.add('hidden');
+      document.getElementById('helpSection').classList.add('hidden');
+      document.getElementById(section + 'Section').classList.remove('hidden');
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) showPreview(file);
+    }
+
+    function showPreview(file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById("previewImage").src = e.target.result;
+        document.getElementById("uploadContent").classList.add("hidden");
+        document.getElementById("previewContent").classList.remove("hidden");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function analyzeImage(event) {
+      event.stopPropagation();
+      const file = document.getElementById("fileInput").files[0];
+      const fieldArea = parseFloat(document.getElementById("fieldArea").value);
+
+      if (!file) return alert("Выберите изображение");
+      if (!fieldArea || fieldArea <= 0) return alert("Введите корректную площадь поля");
+
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("field_area", fieldArea);
+
+      const response = await fetch(backendURL, { method: "POST", body: formData });
+      const data = await response.json();
+
+      document.getElementById("grainCount").textContent = data.grain_count;
+      document.getElementById("lossesPerHa").textContent = data.losses_per_ha + " кг/га";
+      document.getElementById("seasonLosses").textContent = data.season_loss + " кг";
+      document.getElementById("resultImage").src = URL.createObjectURL(file);
+
+      document.getElementById("resultsSection").classList.remove("hidden");
+    }
+
+    function resetApp() {
+      document.getElementById("fileInput").value = "";
+      document.getElementById("fieldArea").value = "";
+      document.getElementById("uploadContent").classList.remove("hidden");
+      document.getElementById("previewContent").classList.add("hidden");
+      document.getElementById("resultsSection").classList.add("hidden");
+    }
+  </script>
+</body>
+</html>
